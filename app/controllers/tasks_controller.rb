@@ -2,9 +2,10 @@ class TasksController < ApplicationController
 
   def index
     per_page = params[:per_page] || Kaminari.config.default_per_page
-    @tasks = Task.page(params[:page])
+    @tasks = Task.where(deleted_at: nil).page(params[:page]).per(per_page)
     render 'api/tasks/index'
   end
+
   def searchby_tag
     @tag = params[:tag]
     @tasks = Task.where(tags: @tag)
@@ -28,35 +29,28 @@ class TasksController < ApplicationController
   def destroy
     @task = Task.find(params[:id])
 
-   @task.destroy
+    if @task.soft_delete
 
-  end
-  def restore
-    @task = Task.unscoped.find(params[:id])
-    respond_to do |format|
-      Rails.logger.debug
-      if @task.restore
-        format.html { redirect_to @task, notice: 'Todo item was successfully restored.' }
-        format.json { render :show, status: :ok, location: @task }
-      else
-        format.html { render :edit }
-        format.json { render json: @task.errors, status: :unprocessable_entity }
-      end
+      render json: { status: 'Deleted', message: 'Task was successfully soft-deleted' }, status: :ok
+    else
+     
+      render json: { status: 'Error', message: 'Failed to soft-delete the task', errors: @task.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
-  # def restore
-  #   @task=Task.unscoped.find(params[:id])
-  #   # @task = Task.only_deleted.
-  #   respond_to do |format|
-  #     if @task.restore
-  #        format.json { render :show, status: :ok, location: @task }
-  #     else
+  def restore
+    @task = Task.unscoped.find(params[:id])
 
-  #       format.json { render json: @task.errors, status: :unprocessable_entity }
-  #     end
-  #   end
-  # end
+    if @task.restore
+
+      render json: { status: 'Restored', message: 'Task was successfully restored' }, status: :ok
+    else
+      
+      render json: { status: 'Error', message: 'Failed to restore the task', errors: @task.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+
   def edit
     @task = Task.find(params[:id])
   end
