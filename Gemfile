@@ -9,6 +9,15 @@ gem "rails", "~> 7.0.7"
 gem 'mongoid', '~> 7.0'
 #rabl
 gem 'rabl'
+gem "byebug"
+
+gem 'enumerize'
+gem 'kaminari-mongoid'
+
+gem 'mongoid_paranoia'
+
+
+
 
 
 

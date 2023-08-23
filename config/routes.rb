@@ -1,9 +1,14 @@
 Rails.application.routes.draw do
-  resources :tasks do
+  resources :tasks ,  :except => [:new, :edit] do
     member do
-      patch 'mark_status'
+
+      put 'restore'
+    end
+    collection do
+      get 'searchby_tag/:tag', action: 'searchby_tag'
     end
   end
 
-  resources :tags, only: [:index, :show]
+
+
 end
